@@ -3,52 +3,222 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { SignInButton } from "@/components/sign-in-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { authOptions } from "@/lib/auth";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
   const session = await getServerSession(authOptions);
+  const err = (() => {
+    const v = searchParams?.error;
+    return Array.isArray(v) ? v[0] : v;
+  })();
   if (session?.user?.email) {
     return (
-      <div className="space-y-6">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">One-Click Unsubscribe Manager</h1>
-          <p className="text-sm text-muted-foreground">
-            Signed in as <span className="font-medium">{session.user.email}</span>
-          </p>
+      <div className="space-y-8">
+        <header className="flex items-center justify-between">
+          <Link href="/" className="text-sm font-semibold tracking-tight">
+            Unmail
+          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button asChild size="sm">
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+          </div>
+        </header>
+
+        <div className="rounded-2xl border bg-card p-8">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold tracking-tight">
+              Inbox, decluttered.
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Signed in as <span className="font-medium">{session.user.email}</span>
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button asChild>
+              <Link href="/dashboard">Open dashboard</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href="https://datatracker.ietf.org/doc/html/rfc8058" target="_blank" rel="noreferrer">
+                How one-click unsubscribe works
+              </a>
+            </Button>
+          </div>
         </div>
-        <Button asChild>
-          <Link href="/dashboard">Open dashboard</Link>
-        </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">One-Click Unsubscribe Manager</h1>
-        <p className="text-sm text-muted-foreground">
-          Connect Gmail, detect subscriptions from <span className="font-medium">List-Unsubscribe</span>, and unsubscribe in one click.
-        </p>
-      </div>
+    <div className="space-y-10">
+      <header className="flex items-center justify-between">
+        <Link href="/" className="text-sm font-semibold tracking-tight">
+          Unmail
+        </Link>
+        <ThemeToggle />
+      </header>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <SignInButton />
-        <Button variant="secondary" asChild>
-          <a href="https://datatracker.ietf.org/doc/html/rfc8058" target="_blank" rel="noreferrer">
-            About one-click unsubscribe
+      <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+        <div className="space-y-5">
+          <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
+            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
+            Gmail-only MVP · standards-first unsubscribe
+          </div>
+
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+            One-click unsubscribe
+            <span className="block text-muted-foreground">without the usual mess.</span>
+          </h1>
+
+          <p className="max-w-xl text-base text-muted-foreground">
+            Unmail scans your recent messages, groups true subscriptions, and triggers
+            List-Unsubscribe actions safely—preferring RFC 8058 one-click when supported.
+          </p>
+
+          {err ? (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
+              <div className="font-medium">Sign-in failed</div>
+              <div className="text-muted-foreground">Error code: {err}</div>
+              <div className="mt-2 text-muted-foreground">
+                Open <Link className="underline" href={`/auth/error?error=${encodeURIComponent(err)}`}>error help</Link>.
+              </div>
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <SignInButton />
+            <Button variant="outline" asChild>
+              <Link href="#how-it-works">How it works</Link>
+            </Button>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-lg border bg-card p-4">
+              <div className="text-sm font-medium">No forwarding</div>
+              <div className="mt-1 text-xs text-muted-foreground">Uses Gmail API via OAuth.</div>
+            </div>
+            <div className="rounded-lg border bg-card p-4">
+              <div className="text-sm font-medium">Standards-first</div>
+              <div className="mt-1 text-xs text-muted-foreground">Prefers List-Unsubscribe one-click.</div>
+            </div>
+            <div className="rounded-lg border bg-card p-4">
+              <div className="text-sm font-medium">Batch actions</div>
+              <div className="mt-1 text-xs text-muted-foreground">Unsubscribe 10/50 in minutes.</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border bg-card p-6">
+          <div className="space-y-3">
+            <div className="text-sm font-medium">What you get</div>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex gap-2">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                A single dashboard for subscription sources.
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                One-click HTTP unsubscribe when supported.
+              </li>
+              <li className="flex gap-2">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
+                Mailto fallback for legacy senders.
+              </li>
+            </ul>
+          </div>
+
+          <div className="mt-6 rounded-xl border bg-background/50 p-4">
+            <div className="text-xs font-medium">Safety note</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Unmail uses subscription headers when available and avoids scraping random “unsubscribe” links.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="how-it-works" className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="rounded-2xl border bg-card p-6">
+            <div className="text-xs font-medium text-muted-foreground">Step 1</div>
+            <div className="mt-2 text-lg font-semibold">Connect Gmail</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              OAuth grants access to read headers and send unsubscribe emails.
+            </p>
+          </div>
+          <div className="rounded-2xl border bg-card p-6">
+            <div className="text-xs font-medium text-muted-foreground">Step 2</div>
+            <div className="mt-2 text-lg font-semibold">Detect subscriptions</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              We group senders using List-ID and List-Unsubscribe headers.
+            </p>
+          </div>
+          <div className="rounded-2xl border bg-card p-6">
+            <div className="text-xs font-medium text-muted-foreground">Step 3</div>
+            <div className="mt-2 text-lg font-semibold">Unsubscribe safely</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              HTTP one-click when supported; otherwise mailto fallback.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border bg-card p-6 md:p-8">
+          <div className="grid gap-8 md:grid-cols-2">
+            <div>
+              <div className="text-sm font-semibold">Privacy posture (MVP)</div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Tokens are stored server-side to enable background scanning and batch unsubscribes.
+                Store minimal message data (mostly headers), and keep audit logs of actions.
+              </p>
+            </div>
+            <div>
+              <div className="text-sm font-semibold">What we do not do</div>
+              <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                <li className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />We do not auto-fill web forms.</li>
+                <li className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />We avoid scraping random unsubscribe links.</li>
+                <li className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />No tracking pixels or analytics in MVP.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border bg-card p-6 md:p-8">
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+          <div>
+            <div className="text-sm font-semibold">Ready to clean up?</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Start with a scan of the last 30 days.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <SignInButton />
+            <Button variant="outline" asChild>
+              <a href="https://github.com/tise-genene/Unmail" target="_blank" rel="noreferrer">
+                View repo
+              </a>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <footer className="flex flex-col justify-between gap-4 border-t pt-8 text-sm text-muted-foreground sm:flex-row">
+        <div>© {new Date().getFullYear()} Unmail</div>
+        <div className="flex gap-4">
+          <a className="hover:underline" href="https://datatracker.ietf.org/doc/html/rfc2369" target="_blank" rel="noreferrer">
+            RFC 2369
           </a>
-        </Button>
-      </div>
-
-      <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-        <div className="font-medium text-foreground">What this MVP does</div>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
-          <li>Scans recent emails and groups likely subscriptions</li>
-          <li>Uses List-Unsubscribe HTTP one-click when available</li>
-          <li>Falls back to sending unsubscribe email for mailto links</li>
-        </ul>
-      </div>
+          <a className="hover:underline" href="https://datatracker.ietf.org/doc/html/rfc8058" target="_blank" rel="noreferrer">
+            RFC 8058
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }

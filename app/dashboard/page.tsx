@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { DashboardClient } from "@/components/dashboard-client";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -11,6 +12,12 @@ export default async function DashboardPage() {
   if (!session?.user?.email) {
     return (
       <div className="space-y-4">
+        <header className="flex items-center justify-between">
+          <Link href="/" className="text-sm font-semibold tracking-tight">
+            Unmail
+          </Link>
+          <ThemeToggle />
+        </header>
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <p className="text-sm text-muted-foreground">You need to sign in first.</p>
         <Button asChild>
@@ -28,6 +35,12 @@ export default async function DashboardPage() {
   if (!user) {
     return (
       <div className="space-y-2">
+        <header className="flex items-center justify-between">
+          <Link href="/" className="text-sm font-semibold tracking-tight">
+            Unmail
+          </Link>
+          <ThemeToggle />
+        </header>
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <p className="text-sm text-muted-foreground">User record not found.</p>
       </div>
@@ -41,14 +54,22 @@ export default async function DashboardPage() {
   });
 
   return (
-    <DashboardClient
-      initialSubscriptions={subscriptions.map((s) => ({
-        ...s,
-        createdAt: s.createdAt.toISOString(),
-        updatedAt: s.updatedAt.toISOString(),
-        lastSeenAt: s.lastSeenAt?.toISOString() ?? null,
-        lastUnsubscribeAttemptAt: s.lastUnsubscribeAttemptAt?.toISOString() ?? null,
-      }))}
-    />
+    <div className="space-y-6">
+      <header className="flex items-center justify-between">
+        <Link href="/" className="text-sm font-semibold tracking-tight">
+          Unmail
+        </Link>
+        <ThemeToggle />
+      </header>
+      <DashboardClient
+        initialSubscriptions={subscriptions.map((s) => ({
+          ...s,
+          createdAt: s.createdAt.toISOString(),
+          updatedAt: s.updatedAt.toISOString(),
+          lastSeenAt: s.lastSeenAt?.toISOString() ?? null,
+          lastUnsubscribeAttemptAt: s.lastUnsubscribeAttemptAt?.toISOString() ?? null,
+        }))}
+      />
+    </div>
   );
 }
