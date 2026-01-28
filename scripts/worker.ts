@@ -36,5 +36,4 @@ new Worker(
   { connection, concurrency: 5 },
 );
 
-// eslint-disable-next-line no-console
 console.log("Worker started: scan + unsubscribe");

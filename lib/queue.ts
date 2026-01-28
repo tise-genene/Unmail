@@ -1,6 +1,8 @@
 import { Queue } from "bullmq";
 import Redis from "ioredis";
 
+import type { ConnectionOptions } from "bullmq";
+
 const globalForRedis = globalThis as unknown as { redis?: Redis; scanQueue?: Queue; unsubscribeQueue?: Queue };
 
 function getRedis() {
@@ -12,10 +14,11 @@ function getRedis() {
 }
 
 export const scanQueue =
-  globalForRedis.scanQueue ?? new Queue("scan", { connection: getRedis() as unknown as any });
+  globalForRedis.scanQueue ??
+  new Queue("scan", { connection: getRedis() as unknown as ConnectionOptions });
 export const unsubscribeQueue =
   globalForRedis.unsubscribeQueue ??
-  new Queue("unsubscribe", { connection: getRedis() as unknown as any });
+  new Queue("unsubscribe", { connection: getRedis() as unknown as ConnectionOptions });
 
 if (process.env.NODE_ENV !== "production") {
   globalForRedis.scanQueue = scanQueue;
