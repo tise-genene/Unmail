@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## One-Click Unsubscribe Manager (MVP A)
+
+Gmail-only dashboard that:
+
+- Scans recent emails and groups likely subscriptions
+- Uses `List-Unsubscribe-Post: List-Unsubscribe=One-Click` (RFC 8058) when available
+- Falls back to `mailto:` unsubscribe when provided
+
+### Tech
+
+- Next.js (App Router) + Tailwind + shadcn/ui
+- Auth: `next-auth` (Google OAuth with Gmail scopes + offline refresh token)
+- DB: Prisma + Postgres (Supabase)
+- Queue: BullMQ + Redis (Upstash/Redis Cloud)
 
 ## Getting Started
 
-First, run the development server:
+### 1) Create a Supabase Postgres database
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Create a project in Supabase
+- Copy the Postgres connection string into `DATABASE_URL`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2) Create a Redis instance (Upstash recommended)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Copy the Redis URL into `REDIS_URL`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3) Configure Google OAuth
 
-## Learn More
+Create credentials in Google Cloud Console:
 
-To learn more about Next.js, take a look at the following resources:
+- OAuth consent screen: add your test users
+- OAuth client: **Web application**
+- Authorized redirect URI:
+	- `http://localhost:3000/api/auth/callback/google`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This app requests Gmail scopes:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `https://www.googleapis.com/auth/gmail.readonly`
+- `https://www.googleapis.com/auth/gmail.send`
 
-## Deploy on Vercel
+### 4) Configure env vars
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Create `.env` (or `.env.local`) using [.env.example](.env.example):
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `DATABASE_URL`
+- `NEXTAUTH_URL`
+- `NEXTAUTH_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `REDIS_URL`
+
+Generate a secret with:
+
+`node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+
+### 5) Set up the database schema
+
+`npm run prisma:push`
+
+Or, if you want migrations:
+
+`npm run prisma:migrate`
+
+### 6) Run the app + worker
+
+In terminal 1:
+
+`npm run dev`
+
+In terminal 2:
+
+`npm run worker`
+
+Open http://localhost:3000, sign in with Google, then go to `/dashboard` and click **Scan inbox**.
+
+## Notes
+
+- “One-click” is only truly possible when the sender supports RFC 8058. Otherwise we fall back to sending the `mailto:` unsubscribe email.
+- This MVP stores OAuth refresh tokens server-side (in Postgres via Prisma). Treat your DB as sensitive.

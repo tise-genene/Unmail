@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  UNSUBSCRIBED
+  FAILED
+}
+
+enum ScanRunStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+enum UnsubscribeMethod {
+  HTTP_ONECLICK
+  MAILTO
+  HTTP
+}
+
+enum JobStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts      Account[]
+  sessions      Session[]
+
+  subscriptions Subscription[]
+  messages      EmailMessage[]
+  scanRuns      ScanRun[]
+  attempts      UnsubscribeAttempt[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  userId                 String
+  fingerprint            String
+  listId                 String?
+  fromAddress            String?
+  fromDomain             String?
+  displayName            String?
+  unsubscribeHttpUrl     String?
+  unsubscribeMailto      String?
+  oneClickSupported      Boolean            @default(false)
+  status                 SubscriptionStatus @default(ACTIVE)
+  lastSeenAt             DateTime?
+  messageCount           Int                @default(0)
+  lastUnsubscribeAttemptAt DateTime?
+
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages               EmailMessage[]
+  attempts               UnsubscribeAttempt[]
+
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  @@unique([userId, fingerprint], name: "userId_fingerprint")
+  @@index([userId, status])
+}
+
+model EmailMessage {
+  id            String   @id @default(cuid())
+  userId        String
+  gmailMessageId String
+  subscriptionId String?
+  fromRaw       String?
+  subject       String?
+  internalDateMs BigInt?
+  receivedAt    DateTime?
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription  Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, gmailMessageId], name: "userId_gmailMessageId")
+  @@index([userId])
+}
+
+model ScanRun {
+  id             String       @id @default(cuid())
+  userId         String
+  status         ScanRunStatus
+  messagesScanned Int          @default(0)
+  error          String?
+  finishedAt     DateTime?
+
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([userId, status])
+}
+
+model UnsubscribeAttempt {
+  id             String            @id @default(cuid())
+  userId         String
+  subscriptionId String
+  status         JobStatus
+  method         UnsubscribeMethod?
+  error          String?
+  finishedAt     DateTime?
+
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription   Subscription      @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([userId, subscriptionId])
+}
