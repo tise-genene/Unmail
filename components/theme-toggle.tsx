@@ -12,7 +12,7 @@ export function ThemeToggle() {
 
   return (
     <Button
-      variant="outline"
+      variant="secondary"
       size="sm"
       onClick={() => setTheme(next)}
       aria-label={`Switch to ${next} mode`}

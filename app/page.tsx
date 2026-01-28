@@ -31,7 +31,7 @@ export default async function Home({
           </div>
         </header>
 
-        <div className="rounded-2xl border bg-card p-8">
+        <div className="rounded-2xl bg-card p-8">
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight">
               Inbox, decluttered.
@@ -45,7 +45,7 @@ export default async function Home({
             <Button asChild>
               <Link href="/dashboard">Open dashboard</Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="secondary" asChild>
               <a href="https://datatracker.ietf.org/doc/html/rfc8058" target="_blank" rel="noreferrer">
                 How one-click unsubscribe works
               </a>
@@ -57,7 +57,7 @@ export default async function Home({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       <header className="flex items-center justify-between">
         <Link href="/" className="text-sm font-semibold tracking-tight">
           Unmail
@@ -67,11 +67,6 @@ export default async function Home({
 
       <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
         <div className="space-y-5">
-          <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
-            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
-            Gmail-only MVP · standards-first unsubscribe
-          </div>
-
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             One-click unsubscribe
             <span className="block text-muted-foreground">without the usual mess.</span>
@@ -83,7 +78,7 @@ export default async function Home({
           </p>
 
           {err ? (
-            <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
+            <div className="rounded-xl bg-destructive/10 p-4 text-sm">
               <div className="font-medium">Sign-in failed</div>
               <div className="text-muted-foreground">Error code: {err}</div>
               <div className="mt-2 text-muted-foreground">
@@ -94,47 +89,38 @@ export default async function Home({
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <SignInButton />
-            <Button variant="outline" asChild>
+            <Button variant="secondary" asChild>
               <Link href="#how-it-works">How it works</Link>
             </Button>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border bg-card p-4">
+            <div className="rounded-xl bg-card p-4">
               <div className="text-sm font-medium">No forwarding</div>
               <div className="mt-1 text-xs text-muted-foreground">Uses Gmail API via OAuth.</div>
             </div>
-            <div className="rounded-lg border bg-card p-4">
+            <div className="rounded-xl bg-card p-4">
               <div className="text-sm font-medium">Standards-first</div>
               <div className="mt-1 text-xs text-muted-foreground">Prefers List-Unsubscribe one-click.</div>
             </div>
-            <div className="rounded-lg border bg-card p-4">
+            <div className="rounded-xl bg-card p-4">
               <div className="text-sm font-medium">Batch actions</div>
               <div className="mt-1 text-xs text-muted-foreground">Unsubscribe 10/50 in minutes.</div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-card p-6">
+        <div className="rounded-2xl bg-card p-6">
           <div className="space-y-3">
             <div className="text-sm font-medium">What you get</div>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex gap-2">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
-                A single dashboard for subscription sources.
-              </li>
-              <li className="flex gap-2">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
-                One-click HTTP unsubscribe when supported.
-              </li>
-              <li className="flex gap-2">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
-                Mailto fallback for legacy senders.
-              </li>
-            </ul>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p>A single dashboard for subscription sources.</p>
+              <p>HTTP one-click unsubscribe when supported.</p>
+              <p>Mailto fallback for legacy senders.</p>
+            </div>
           </div>
 
-          <div className="mt-6 rounded-xl border bg-background/50 p-4">
+          <div className="mt-6 rounded-xl bg-background/40 p-4">
             <div className="text-xs font-medium">Safety note</div>
             <p className="mt-1 text-xs text-muted-foreground">
               Unmail uses subscription headers when available and avoids scraping random “unsubscribe” links.
@@ -145,21 +131,21 @@ export default async function Home({
 
       <section id="how-it-works" className="space-y-6">
         <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-2xl border bg-card p-6">
+          <div className="rounded-2xl bg-card p-6">
             <div className="text-xs font-medium text-muted-foreground">Step 1</div>
             <div className="mt-2 text-lg font-semibold">Connect Gmail</div>
             <p className="mt-2 text-sm text-muted-foreground">
               OAuth grants access to read headers and send unsubscribe emails.
             </p>
           </div>
-          <div className="rounded-2xl border bg-card p-6">
+          <div className="rounded-2xl bg-card p-6">
             <div className="text-xs font-medium text-muted-foreground">Step 2</div>
             <div className="mt-2 text-lg font-semibold">Detect subscriptions</div>
             <p className="mt-2 text-sm text-muted-foreground">
               We group senders using List-ID and List-Unsubscribe headers.
             </p>
           </div>
-          <div className="rounded-2xl border bg-card p-6">
+          <div className="rounded-2xl bg-card p-6">
             <div className="text-xs font-medium text-muted-foreground">Step 3</div>
             <div className="mt-2 text-lg font-semibold">Unsubscribe safely</div>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -168,7 +154,7 @@ export default async function Home({
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-card p-6 md:p-8">
+        <div className="rounded-2xl bg-card p-6 md:p-8">
           <div className="grid gap-8 md:grid-cols-2">
             <div>
               <div className="text-sm font-semibold">Privacy posture (MVP)</div>
@@ -179,17 +165,17 @@ export default async function Home({
             </div>
             <div>
               <div className="text-sm font-semibold">What we do not do</div>
-              <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
-                <li className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />We do not auto-fill web forms.</li>
-                <li className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />We avoid scraping random unsubscribe links.</li>
-                <li className="flex gap-2"><span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />No tracking pixels or analytics in MVP.</li>
-              </ul>
+              <div className="mt-2 space-y-2 text-sm text-muted-foreground">
+                <p>We do not auto-fill web forms.</p>
+                <p>We avoid scraping random unsubscribe links.</p>
+                <p>No tracking pixels or analytics in MVP.</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="rounded-2xl border bg-card p-6 md:p-8">
+      <section className="rounded-2xl bg-card p-6 md:p-8">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
             <div className="text-sm font-semibold">Ready to clean up?</div>
@@ -199,7 +185,7 @@ export default async function Home({
           </div>
           <div className="flex gap-3">
             <SignInButton />
-            <Button variant="outline" asChild>
+            <Button variant="secondary" asChild>
               <a href="https://github.com/tise-genene/Unmail" target="_blank" rel="noreferrer">
                 View repo
               </a>
@@ -208,7 +194,7 @@ export default async function Home({
         </div>
       </section>
 
-      <footer className="flex flex-col justify-between gap-4 border-t pt-8 text-sm text-muted-foreground sm:flex-row">
+      <footer className="flex flex-col justify-between gap-4 pt-4 text-sm text-muted-foreground sm:flex-row">
         <div>© {new Date().getFullYear()} Unmail</div>
         <div className="flex gap-4">
           <a className="hover:underline" href="https://datatracker.ietf.org/doc/html/rfc2369" target="_blank" rel="noreferrer">
