@@ -1,4 +1,4 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import { Worker } from "bullmq";
 import Redis from "ioredis";
 
@@ -10,6 +10,11 @@ function requiredEnv(name: string) {
   if (!value) throw new Error(`Missing env var: ${name}`);
   return value;
 }
+
+// Next.js loads `.env.local` automatically, but this worker is a separate process.
+// Load `.env.local` first (dev), then fall back to `.env`.
+dotenv.config({ path: ".env.local" });
+dotenv.config({ path: ".env" });
 
 const connection = new Redis(requiredEnv("REDIS_URL"), { maxRetriesPerRequest: null });
 
