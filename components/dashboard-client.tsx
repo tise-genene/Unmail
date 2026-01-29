@@ -35,15 +35,26 @@ type SubscriptionRow = {
   lastUnsubscribeAttemptAt: string | null;
 };
 
+type LastScan = {
+  status: "RUNNING" | "SUCCEEDED" | "FAILED";
+  createdAt: string;
+  finishedAt: string | null;
+  messagesScanned: number;
+  error: string | null;
+};
+
 export function DashboardClient({
   initialSubscriptions,
+  lastScan,
 }: {
   initialSubscriptions: SubscriptionRow[];
+  lastScan: LastScan | null;
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [isPending, startTransition] = useTransition();
   const [busy, setBusy] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const selectedIds = useMemo(
     () => Object.entries(selected).filter(([, v]) => v).map(([k]) => k),
@@ -52,8 +63,12 @@ export function DashboardClient({
 
   async function scan() {
     setBusy("scan");
+    setNotice(null);
     try {
       await fetch("/api/scan", { method: "POST" });
+      setNotice(
+        "Scan queued. Results appear after the background worker finishes (run `npm run worker` in dev).",
+      );
       startTransition(() => router.refresh());
     } finally {
       setBusy(null);
@@ -81,7 +96,16 @@ export function DashboardClient({
         <div>
           <h1 className="text-2xl font-semibold">Dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            Scan Gmail and manage subscriptions via List-Unsubscribe.
+            Scan Gmail (including Spam) and manage subscriptions via List-Unsubscribe.
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {lastScan
+              ? lastScan.status === "RUNNING"
+                ? "Last scan: running…"
+                : lastScan.status === "SUCCEEDED"
+                  ? `Last scan: ${lastScan.messagesScanned} messages scanned.`
+                  : `Last scan: failed${lastScan.error ? ` — ${lastScan.error}` : "."}`
+              : "Last scan: none yet."}
           </p>
         </div>
         <div className="flex gap-2">
@@ -97,6 +121,12 @@ export function DashboardClient({
           </Button>
         </div>
       </div>
+
+      {notice ? (
+        <div className="rounded-xl bg-card p-4 text-sm text-muted-foreground">
+          {notice}
+        </div>
+      ) : null}
 
       <Card>
         <CardHeader>
@@ -121,6 +151,9 @@ export function DashboardClient({
                 <TableRow>
                   <TableCell colSpan={5} className="py-8 text-center text-sm text-muted-foreground">
                     No subscriptions yet. Click “Scan inbox”.
+                    <div className="mt-2 text-xs">
+                      In dev, scans run in the background worker: <span className="font-medium">npm run worker</span>
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -176,7 +209,7 @@ export function DashboardClient({
 
           <Separator className="my-4" />
           <div className="text-xs text-muted-foreground">
-            Tip: Start with a smaller scan window while testing. The worker does the heavy lifting.
+            Tip: Gmail search usually hides Spam/Trash by default; Unmail includes them for scanning.
           </div>
         </CardContent>
       </Card>

@@ -9,11 +9,14 @@ import { authOptions } from "@/lib/auth";
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const resolvedSearchParams = searchParams ? await Promise.resolve(searchParams) : undefined;
   const session = await getServerSession(authOptions);
   const err = (() => {
-    const v = searchParams?.error;
+    const v = resolvedSearchParams?.error;
     return Array.isArray(v) ? v[0] : v;
   })();
   if (session?.user?.email) {
@@ -57,7 +60,7 @@ export default async function Home({
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-16">
       <header className="flex items-center justify-between">
         <Link href="/" className="text-sm font-semibold tracking-tight">
           Unmail
@@ -65,15 +68,19 @@ export default async function Home({
         <ThemeToggle />
       </header>
 
-      <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
-        <div className="space-y-5">
+      <section className="space-y-6">
+        <div className="max-w-3xl space-y-5">
+          <div className="text-xs font-medium tracking-wide text-muted-foreground">
+            Gmail-only MVP · standards-first unsubscribe
+          </div>
+
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             One-click unsubscribe
             <span className="block text-muted-foreground">without the usual mess.</span>
           </h1>
 
-          <p className="max-w-xl text-base text-muted-foreground">
-            Unmail scans your recent messages, groups true subscriptions, and triggers
+          <p className="text-base text-muted-foreground">
+            Unmail scans your recent messages, groups real subscriptions, and triggers
             List-Unsubscribe actions safely—preferring RFC 8058 one-click when supported.
           </p>
 
@@ -82,7 +89,14 @@ export default async function Home({
               <div className="font-medium">Sign-in failed</div>
               <div className="text-muted-foreground">Error code: {err}</div>
               <div className="mt-2 text-muted-foreground">
-                Open <Link className="underline" href={`/auth/error?error=${encodeURIComponent(err)}`}>error help</Link>.
+                Open{" "}
+                <Link
+                  className="underline"
+                  href={`/auth/error?error=${encodeURIComponent(err)}`}
+                >
+                  error help
+                </Link>
+                .
               </div>
             </div>
           ) : null}
@@ -92,101 +106,101 @@ export default async function Home({
             <Button variant="secondary" asChild>
               <Link href="#how-it-works">How it works</Link>
             </Button>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl bg-card p-4">
-              <div className="text-sm font-medium">No forwarding</div>
-              <div className="mt-1 text-xs text-muted-foreground">Uses Gmail API via OAuth.</div>
-            </div>
-            <div className="rounded-xl bg-card p-4">
-              <div className="text-sm font-medium">Standards-first</div>
-              <div className="mt-1 text-xs text-muted-foreground">Prefers List-Unsubscribe one-click.</div>
-            </div>
-            <div className="rounded-xl bg-card p-4">
-              <div className="text-sm font-medium">Batch actions</div>
-              <div className="mt-1 text-xs text-muted-foreground">Unsubscribe 10/50 in minutes.</div>
-            </div>
+            <Button variant="secondary" asChild>
+              <a
+                href="https://datatracker.ietf.org/doc/html/rfc8058"
+                target="_blank"
+                rel="noreferrer"
+              >
+                RFC 8058
+              </a>
+            </Button>
           </div>
         </div>
 
-        <div className="rounded-2xl bg-card p-6">
-          <div className="space-y-3">
-            <div className="text-sm font-medium">What you get</div>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p>A single dashboard for subscription sources.</p>
-              <p>HTTP one-click unsubscribe when supported.</p>
-              <p>Mailto fallback for legacy senders.</p>
-            </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-2xl bg-card p-6">
+            <div className="text-sm font-semibold">Clean grouping</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Uses List-ID and List-Unsubscribe headers when present.
+            </p>
           </div>
-
-          <div className="mt-6 rounded-xl bg-background/40 p-4">
-            <div className="text-xs font-medium">Safety note</div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Unmail uses subscription headers when available and avoids scraping random “unsubscribe” links.
+          <div className="rounded-2xl bg-card p-6">
+            <div className="text-sm font-semibold">Safer by default</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Avoids scraping random “unsubscribe” links in the email body.
+            </p>
+          </div>
+          <div className="rounded-2xl bg-card p-6">
+            <div className="text-sm font-semibold">Batch actions</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Unsubscribe 10/50 at a time, with an audit trail.
             </p>
           </div>
         </div>
       </section>
 
-      <section id="how-it-works" className="space-y-6">
+      <section id="how-it-works" className="space-y-8">
         <div className="grid gap-6 md:grid-cols-3">
           <div className="rounded-2xl bg-card p-6">
-            <div className="text-xs font-medium text-muted-foreground">Step 1</div>
+            <div className="text-xs font-medium text-muted-foreground">01</div>
             <div className="mt-2 text-lg font-semibold">Connect Gmail</div>
             <p className="mt-2 text-sm text-muted-foreground">
-              OAuth grants access to read headers and send unsubscribe emails.
+              OAuth grants access to read key headers and send unsubscribe emails.
             </p>
           </div>
           <div className="rounded-2xl bg-card p-6">
-            <div className="text-xs font-medium text-muted-foreground">Step 2</div>
+            <div className="text-xs font-medium text-muted-foreground">02</div>
             <div className="mt-2 text-lg font-semibold">Detect subscriptions</div>
             <p className="mt-2 text-sm text-muted-foreground">
-              We group senders using List-ID and List-Unsubscribe headers.
+              We group messages using List-ID and List-Unsubscribe metadata.
             </p>
           </div>
           <div className="rounded-2xl bg-card p-6">
-            <div className="text-xs font-medium text-muted-foreground">Step 3</div>
+            <div className="text-xs font-medium text-muted-foreground">03</div>
             <div className="mt-2 text-lg font-semibold">Unsubscribe safely</div>
             <p className="mt-2 text-sm text-muted-foreground">
-              HTTP one-click when supported; otherwise mailto fallback.
+              HTTP one-click when supported; otherwise a mailto fallback.
             </p>
           </div>
         </div>
 
-        <div className="rounded-2xl bg-card p-6 md:p-8">
-          <div className="grid gap-8 md:grid-cols-2">
-            <div>
-              <div className="text-sm font-semibold">Privacy posture (MVP)</div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Tokens are stored server-side to enable background scanning and batch unsubscribes.
-                Store minimal message data (mostly headers), and keep audit logs of actions.
-              </p>
-            </div>
-            <div>
-              <div className="text-sm font-semibold">What we do not do</div>
-              <div className="mt-2 space-y-2 text-sm text-muted-foreground">
-                <p>We do not auto-fill web forms.</p>
-                <p>We avoid scraping random unsubscribe links.</p>
-                <p>No tracking pixels or analytics in MVP.</p>
-              </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-2xl bg-card p-6 md:p-8">
+            <div className="text-sm font-semibold">Privacy posture (MVP)</div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Tokens are stored server-side to enable background scanning and batch unsubscribes.
+              We store minimal message data (mostly headers) and keep audit logs of actions.
+            </p>
+          </div>
+
+          <div className="rounded-2xl bg-card p-6 md:p-8">
+            <div className="text-sm font-semibold">What we do not do</div>
+            <div className="mt-2 space-y-2 text-sm text-muted-foreground">
+              <p>We do not auto-fill web forms.</p>
+              <p>We avoid scraping random unsubscribe links.</p>
+              <p>No tracking pixels or analytics in MVP.</p>
             </div>
           </div>
         </div>
       </section>
 
       <section className="rounded-2xl bg-card p-6 md:p-8">
-        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+        <div className="grid gap-6 md:grid-cols-2 md:items-center">
           <div>
             <div className="text-sm font-semibold">Ready to clean up?</div>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-muted-foreground">
               Start with a scan of the last 30 days.
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row md:justify-end">
             <SignInButton />
             <Button variant="secondary" asChild>
-              <a href="https://github.com/tise-genene/Unmail" target="_blank" rel="noreferrer">
+              <a
+                href="https://github.com/tise-genene/Unmail"
+                target="_blank"
+                rel="noreferrer"
+              >
                 View repo
               </a>
             </Button>

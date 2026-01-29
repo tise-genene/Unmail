@@ -99,7 +99,9 @@ export async function scanGmailForUser({ userId, maxMessages = 300 }: { userId: 
     while (processed < maxMessages) {
       const list = await gmail.users.messages.list({
         userId: "me",
-        q: "newer_than:30d",
+        // Gmail search defaults exclude Spam/Trash unless explicitly included.
+        // `in:anywhere` includes spam and trash so users can declutter subscriptions hiding there.
+        q: "in:anywhere newer_than:30d",
         maxResults: Math.min(100, maxMessages - processed),
         pageToken,
       });

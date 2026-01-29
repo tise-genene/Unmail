@@ -1,9 +1,11 @@
 type Props = {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>;
 };
 
 function getParam(
-  params: Props["searchParams"],
+  params: Record<string, string | string[] | undefined> | undefined,
   key: string,
 ): string | undefined {
   const value = params?.[key];
@@ -11,8 +13,10 @@ function getParam(
   return value;
 }
 
-export default function AuthErrorPage({ searchParams }: Props) {
-  const error = getParam(searchParams, "error") ?? "Unknown";
+export default async function AuthErrorPage({ searchParams }: Props) {
+  const resolved = searchParams ? await Promise.resolve(searchParams) : undefined;
+  const error = getParam(resolved, "error") ?? "Unknown";
+  const isCallbackLike = error.toLowerCase().includes("callback") || error.toLowerCase().includes("oauth");
 
   return (
     <div className="space-y-4">
@@ -28,6 +32,15 @@ export default function AuthErrorPage({ searchParams }: Props) {
           <li>Confirm redirect URI includes: <span className="font-medium">http://localhost:3000/api/auth/callback/google</span></li>
           <li>Make sure <span className="font-medium">NEXTAUTH_URL</span> is <span className="font-medium">http://localhost:3000</span></li>
           <li>If using Supabase, ensure <span className="font-medium">DATABASE_URL</span> password is URL-encoded (no raw “?” or “#”).</li>
+          {isCallbackLike ? (
+            <li>
+              If this is a timeout, check server-to-Google connectivity:
+              {" "}
+              <a className="underline" href="/api/debug/google" target="_blank" rel="noreferrer">
+                /api/debug/google
+              </a>
+            </li>
+          ) : null}
         </ul>
       </div>
 

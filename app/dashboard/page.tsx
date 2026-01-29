@@ -53,6 +53,12 @@ export default async function DashboardPage() {
     take: 500,
   });
 
+  const lastScan = await prisma.scanRun.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    select: { status: true, createdAt: true, finishedAt: true, messagesScanned: true, error: true },
+  });
+
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
@@ -69,6 +75,17 @@ export default async function DashboardPage() {
           lastSeenAt: s.lastSeenAt?.toISOString() ?? null,
           lastUnsubscribeAttemptAt: s.lastUnsubscribeAttemptAt?.toISOString() ?? null,
         }))}
+        lastScan={
+          lastScan
+            ? {
+                status: lastScan.status,
+                createdAt: lastScan.createdAt.toISOString(),
+                finishedAt: lastScan.finishedAt?.toISOString() ?? null,
+                messagesScanned: lastScan.messagesScanned,
+                error: lastScan.error ?? null,
+              }
+            : null
+        }
       />
     </div>
   );

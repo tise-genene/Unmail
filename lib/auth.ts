@@ -22,6 +22,10 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: requiredEnv("GOOGLE_CLIENT_ID"),
       clientSecret: requiredEnv("GOOGLE_CLIENT_SECRET"),
+      allowDangerousEmailAccountLinking: true,
+      httpOptions: {
+        timeout: 15_000,
+      },
       authorization: {
         params: {
           prompt: "consent",
